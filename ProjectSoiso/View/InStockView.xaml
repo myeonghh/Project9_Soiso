@@ -1,0 +1,53 @@
+﻿<Window x:Class="ProjectSoiso.View.InStockView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ProjectSoiso.ViewModel"
+        mc:Ignorable="d"
+        Title="상품 등록" Height="600" Width="900">
+    <Window.DataContext>
+        <vm:ProductViewModel />
+    </Window.DataContext>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 상품명 -->
+        <Label Content="상품명" Grid.Row="0" VerticalAlignment="Center" />
+        <TextBox Text="{Binding CurrentProduct.Name, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Margin="80,0,0,0" />
+
+        <!-- 카테고리 -->
+        <Label Content="카테고리" Grid.Row="1" VerticalAlignment="Center" />
+        <TextBox Text="{Binding CurrentProduct.Category, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Margin="80,0,0,0" />
+
+        <!-- 가격 -->
+        <Label Content="가격" Grid.Row="2" VerticalAlignment="Center" />
+        <TextBox Text="{Binding CurrentProduct.Price, UpdateSourceTrigger=PropertyChanged}" 
+                 Grid.Row="2" Margin="80,0,0,0" PreviewTextInput="NumericOnly" />
+
+        <!-- 이미지 등록 -->
+        <Button Content="이미지 등록" Command="{Binding SelectImageCommand}" Grid.Row="3" Margin="50,10,50,0" />
+
+        <!-- 이미지 미리보기 -->
+        <Image x:Name="PreviewImage" Source="{Binding PreviewImageSource}" Grid.Row="4" Height="100" Width="100" Margin="0,10,0,0" Stretch="Uniform" />
+
+        <!-- 결과 메시지 -->
+        <TextBlock Text="{Binding Message}" Foreground="Red" Grid.Row="5" Margin="0,10,0,0" />
+
+        <!-- 확인 버튼 -->
+        <Button Content="상품 등록" Command="{Binding RegisterCommand}" Grid.Row="6" Margin="0,10,0,0" />
+
+        <!-- 뒤로가기 버튼 -->
+        <Button Content="뒤로가기" Command="{Binding GoBackCommand}" Grid.Row="7" Margin="0,10,0,0" />
+    </Grid>
+</Window>
