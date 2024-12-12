@@ -1,29 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ProjectSoiso.ViewModel;
 
 namespace ProjectSoiso.View
 {
-    /// <summary>
-    /// SalesView.xaml에 대한 상호 작용 논리
-    /// </summary>
     public partial class SalesView : Window
     {
+        private SalesViewModel viewModel;
+
         public SalesView()
         {
             InitializeComponent();
+            viewModel = new SalesViewModel();
+            DataContext = viewModel;
         }
+
+        private void MonthSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MonthSelector.SelectedItem is string selectedMonth)
+            {
+                // 기존 데이터 로드
+                viewModel.LoadDailyRevenue(selectedMonth);
+
+                // 카테고리 데이터 로드
+                viewModel.LoadCategoryData(selectedMonth);
+            }
+        }
+
     }
 }
-
-

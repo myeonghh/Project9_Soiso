@@ -82,7 +82,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button Content="뒤로가기" Command="{Binding GoBackCommand}" HorizontalAlignment="Left" Margin="40,0,0,0" VerticalAlignment="Center" Height="31" Width="67"/>
+            <Button Content="뒤로가기" Command="{Binding GoBackCommand}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Height="30" Width="74"/>
         </Grid>
 
         <!-- 구분선 -->

@@ -9,8 +9,48 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="image\back.png" />
+    <None Remove="image\laser.gif" />
+    <None Remove="image\laser.png" />
+    <None Remove="image\laser_green.gif" />
+    <None Remove="image\logo_mini.png" />
+    <None Remove="View\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AForge" Version="2.2.5" />
+    <PackageReference Include="AForge.Video" Version="2.2.5" />
+    <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
+    <PackageReference Include="BarCode" Version="2024.12.8" />
+    <PackageReference Include="IronQR" Version="2024.12.2" />
+    <PackageReference Include="IronSoftware.Native.PdfModel" Version="2024.12.1" />
     <PackageReference Include="MySql.Data" Version="9.1.0" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="System.IO.Ports" Version="9.0.0" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Model\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="image\back.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\laser.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\laser.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\laser_green.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\logo_mini.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="View\logo.png" />
   </ItemGroup>
 
 </Project>
