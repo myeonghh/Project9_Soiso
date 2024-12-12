@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProjectSoiso.View"
         mc:Ignorable="d"
-        Title="SalesView" Height="450" Width="800">
+        Title="SalesView" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen">
     <Grid>
         
     </Grid>

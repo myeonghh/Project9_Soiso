@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:ProjectSoiso.ViewModel"
         mc:Ignorable="d"
-        Title="상품 등록" Height="600" Width="900">
+        Title="상품 등록" Height="600" Width="920"
+        WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:ProductViewModel />
     </Window.DataContext>
