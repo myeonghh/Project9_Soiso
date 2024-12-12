@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using ProjectSoiso.Helper;
 
 namespace ProjectSoiso.ViewModel
 {

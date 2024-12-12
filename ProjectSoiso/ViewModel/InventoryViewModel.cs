@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Microsoft.Win32;
+using MySql.Data.MySqlClient;
 using ProjectSoiso.Helper;
 using ProjectSoiso.Model;
 using System.Collections.ObjectModel;
@@ -7,11 +8,15 @@ using System.Data;
 using System.Windows.Media.Imaging;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Input;
+using System.Windows;
 
 namespace ProjectSoiso.ViewModel
 {
     class InventoryViewModel : ViewModelBase
     {
+        public ICommand GoBackCommand { get; } // 뒤로가기 명령 (Command)
+
         // 속성 변경 알림 이벤트 정의
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -53,6 +58,17 @@ namespace ProjectSoiso.ViewModel
             CompletedInventories = new ObservableCollection<Inventory>(); // 검수 완료 목록 초기화
             PendingInventories = new ObservableCollection<Inventory>(); // 검수 대기 목록 초기화
             LoadDataFromDatabase(); // 데이터베이스에서 초기 데이터 로드
+            GoBackCommand = new RelayCommand(ExecuteGoBack); // 뒤로가기 명령 초기화
+        }
+
+        private void ExecuteGoBack(object parameter)
+        {
+            // MainPage.xaml 창 열기
+            var mainPage = new ProjectSoiso.View.MainPage();
+            mainPage.Show();
+
+            // 현재 창 닫기
+            Application.Current.Windows[0]?.Close();
         }
 
         // 데이터베이스에서 데이터를 로드하여 CompletedInventories와 PendingInventories를 채움
@@ -289,6 +305,7 @@ namespace ProjectSoiso.ViewModel
                 // 이미지 경로가 유효하고 파일이 존재하는지 확인
                 if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath))
                 {
+                    Debug.WriteLine("이미지");
                     BitmapImage bitmap = new BitmapImage();
                     bitmap.BeginInit(); // BitmapImage 초기화 시작
                     bitmap.UriSource = new Uri(imagePath, UriKind.Absolute); // 경로를 URI로 설정

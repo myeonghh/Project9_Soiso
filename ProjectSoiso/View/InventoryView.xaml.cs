@@ -47,7 +47,7 @@ namespace ProjectSoiso.View
                         Debug.WriteLine($"Quantity updated for ProductName={productName}, NewQuantity={newQuantity}");
 
                         // ViewModel을 통해 데이터베이스의 수량을 업데이트
-                        if (DataContext is InventoryVM viewModel)
+                        if (DataContext is InventoryViewModel viewModel)
                         {
                             viewModel.UpdateInventoryQuantity(productName, newQuantity);
                         }
@@ -89,7 +89,7 @@ namespace ProjectSoiso.View
         // ViewModel의 데이터를 새로고침하는 메서드
         private void RefreshData()
         {
-            if (DataContext is InventoryVM viewModel) // DataContext가 InventoryVM인지 확인
+            if (DataContext is InventoryViewModel viewModel) // DataContext가 InventoryVM인지 확인
             {
                 Debug.WriteLine("Refreshing data..."); // 디버그 메시지 출력
                 viewModel.ReloadData(); // ViewModel의 ReloadData 메서드 호출
@@ -132,7 +132,7 @@ namespace ProjectSoiso.View
                 Debug.WriteLine($"Completed CheckBox: ProductName={productName}, IsChecked={isChecked}"); // 디버그 로그
 
                 // ViewModel의 UpdateProductState 메서드를 호출하여 상태 업데이트
-                if (DataContext is InventoryVM viewModel)
+                if (DataContext is InventoryViewModel viewModel)
                 {
                     viewModel.UpdateProductState(productName, isChecked);
                 }
@@ -160,7 +160,7 @@ namespace ProjectSoiso.View
                 Debug.WriteLine($"Pending CheckBox: ProductName={productName}, IsChecked={isChecked}"); // 디버그 로그
 
                 // ViewModel의 ProcessPendingCheckBox 메서드 호출
-                if (DataContext is InventoryVM viewModel)
+                if (DataContext is InventoryViewModel viewModel)
                 {
                     viewModel.ProcessPendingCheckBox(productName, isChecked);
                 }

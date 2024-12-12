@@ -13,7 +13,7 @@ namespace ProjectSoiso.Helper
         public DBHelper()
         {
             // MySQL 서버 연결 설정
-            _connectionString = "Server=127.0.0.1;Database=soiso;User Id=root;Password=123;SslMode=None;CharSet=utf8mb4;";
+            _connectionString = "Server=127.0.0.1;Database=soiso;User Id=root;Password=1234;SslMode=None;CharSet=utf8mb4;";
         }
 
         // 데이터베이스에서 SELECT 쿼리를 실행하고 결과를 DataTable로 반환

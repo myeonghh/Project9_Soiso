@@ -3,14 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ProjectSoiso.View"
         xmlns:vm="clr-namespace:ProjectSoiso.ViewModel"
         mc:Ignorable="d" 
         Title="Inventory View" Height="600" Width="920"
         WindowStartupLocation="CenterScreen">
     <!-- ViewModel을 데이터 컨텍스트로 설정 -->
     <Window.DataContext>
-        <vm:ProductViewModel />
+        <vm:InventoryViewModel />
     </Window.DataContext>
 
     <Grid>
@@ -83,7 +82,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button Content="뒤로가기" HorizontalAlignment="Left" Margin="40,0,0,0" VerticalAlignment="Center" Height="31" Width="67"/>
+            <Button Content="뒤로가기" Command="{Binding GoBackCommand}" HorizontalAlignment="Left" Margin="40,0,0,0" VerticalAlignment="Center" Height="31" Width="67"/>
         </Grid>
 
         <!-- 구분선 -->

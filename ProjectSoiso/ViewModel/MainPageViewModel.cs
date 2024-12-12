@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using ProjectSoiso.Helper;
 
 namespace ProjectSoiso.ViewModel
 {
@@ -6,6 +7,8 @@ namespace ProjectSoiso.ViewModel
     {
         public ICommand OpenInStockViewCommand { get; }
         public ICommand OpenSalesViewCommand { get; }
+
+        public ICommand OpenInventoryViewCommand { get; }
 
         private string _connectionStatus;
 
@@ -23,6 +26,7 @@ namespace ProjectSoiso.ViewModel
         {
             OpenInStockViewCommand = new RelayCommand(typeof(View.InStockView));
             OpenSalesViewCommand = new RelayCommand(typeof(View.SalesView));
+            OpenInventoryViewCommand = new RelayCommand(typeof(View.InventoryView));
             ConnectionStatus = "서버 연결 중...";
             _ = InitializeTcpConnection(); // 비동기로 TCP 연결 초기화
         }
