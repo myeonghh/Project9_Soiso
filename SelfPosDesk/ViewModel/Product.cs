@@ -50,6 +50,11 @@ namespace SelfPosDesk.ViewModel
             }
         }
 
+        private void UpdateTotalPrice()
+        {
+            TotalPrice = Price * Quantity;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

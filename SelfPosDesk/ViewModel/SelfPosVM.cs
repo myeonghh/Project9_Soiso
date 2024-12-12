@@ -12,6 +12,7 @@ using AForge.Video.DirectShow;
 using System.Windows;
 using System.Diagnostics;
 using ZstdSharp.Unsafe;
+using SelfPosDesk.Helper;
 
 
 namespace SelfPosDesk.ViewModel
@@ -23,6 +24,10 @@ namespace SelfPosDesk.ViewModel
         private decimal _totalCount;
         private decimal _alltotalAmount;
         private SerialPort _serialPort; // 아두이노 시리얼 포트
+        private TcpClientHelper clientManager; // tcp통신 클래스 객체 선언
+        private bool connectSuccess;
+
+        private enum ACT { BuyItem };
 
         private readonly TimeSpan _processingDelay = TimeSpan.FromSeconds(3); // QR 처리 지연 시간
         private DateTime _lastProcessedTime = DateTime.MinValue; // 마지막 처리 시간
@@ -117,6 +122,33 @@ namespace SelfPosDesk.ViewModel
 
             // 카메라 자동 시작
             StartCamera();
+
+            // 서버 연결
+            SeverConnect();
+        }
+
+        private async void SeverConnect()
+        {
+            string ip = "10.10.20.105"; // 서버 IP
+            int port = 12345; // 서버 포트
+
+            clientManager = new TcpClientHelper(ip, port); // TcpClientManager 객체 생성
+            connectSuccess = await clientManager.Connect(); // 비동기로 초기화
+
+            if (connectSuccess)
+            {
+                //severConnectTextBlock.Text = $"서버연결 성공  [ IP: {ip} PORT: {port} ]";
+                clientManager.OnDataReceived += HandleServerData; // 서버에서 수신한 데이터 처리
+            }
+            else
+            {
+                //severConnectTextBlock.Text = "서버연결 실패";
+            }
+        }
+
+        private async Task HandleServerData(string data)
+        {
+
         }
 
         private void InitializeSerialPort()
@@ -167,10 +199,44 @@ namespace SelfPosDesk.ViewModel
             _qrProcessor.StopCamera();
         }
 
-        private void SendToServer()
+        private async void SendToServer()
         {
-            MessageBox.Show("데이터보내기");
+            if (Products == null || Products.Count == 0)
+            {
+                MessageBox.Show("장바구니에 상품이 없습니다.");
+                return;
+            }
+
+            // 상품 정보를 직렬화
+            string serializedProducts = string.Join("|", Products.Select(p => $"{p.ProductName},{p.Price},{p.Quantity}"));
+
+            // TCP 통신을 이용해 서버로 데이터 전송
+            if (connectSuccess && clientManager != null)
+            {
+                try
+                {
+                    // 결제한 상품 정보 서버로 전송
+                    await clientManager.SendData((int)ACT.BuyItem, AlltotalAmount.ToString(), serializedProducts);
+                    MessageBox.Show("상품 정보를 서버로 전송했습니다.");
+
+                    // 장바구니 초기화
+                    Products = new ObservableCollection<Product>();
+                    OnPropertyChanged(nameof(Products)); // PropertyChanged 이벤트 발생
+                    UpdateTotalAmount(); // 총 금액 초기화
+                    UpdateTotalcount();  // 총 수량 초기화
+                    UpdateTotalAllAmount(); // 총 금액 초기화
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"상품 정보를 전송하는 데 실패했습니다: {ex.Message}");
+                }
+            }
+            else
+            {
+                MessageBox.Show("서버와 연결되어 있지 않습니다.");
+            }
         }
+
         private void OnQRCodeScanned(object sender, string qrCodeData)
         {
             // QR 코드 처리 지연 시간 확인
@@ -219,7 +285,7 @@ namespace SelfPosDesk.ViewModel
 
         private void UpdateTotalcount()
         {
-            TotalCount =+ Products.Sum(p => p.Quantity);
+            TotalCount = Products.Sum(p => p.Quantity);
         }
 
         private void UpdateTotalAmount()
@@ -229,7 +295,7 @@ namespace SelfPosDesk.ViewModel
 
         private void UpdateTotalAllAmount()
         {
-            AlltotalAmount =+ Products.Sum(p => p.TotalPrice);
+            AlltotalAmount = Products.Sum(p => p.TotalPrice);
         }
         private void OnPreviewFrameAvailable(object sender, BitmapImage frame)
         {

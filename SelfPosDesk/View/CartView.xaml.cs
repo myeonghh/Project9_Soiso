@@ -19,9 +19,5 @@ namespace SelfPosDesk.View
             Debug.WriteLine("CartView 생성 및 DataContext 설정 완료");
         }
 
-        private void Separator_Expanded(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }

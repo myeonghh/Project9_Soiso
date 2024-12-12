@@ -69,7 +69,7 @@
             <ListView Grid.Row="1" ItemsSource="{Binding Products}" Margin="10">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="상품명" DisplayMemberBinding="{Binding ProductName}" Width="100"/>
+                        <GridViewColumn Header="상품명" DisplayMemberBinding="{Binding ProductName}" Width="150"/>
                         <GridViewColumn Header="가격" DisplayMemberBinding="{Binding Price}" Width="80"/>
                         <GridViewColumn Header="수량" DisplayMemberBinding="{Binding Quantity}" Width="60"/>
                         <GridViewColumn Header="금액" DisplayMemberBinding="{Binding TotalPrice}" Width="80"/>
@@ -105,7 +105,8 @@
             </StackPanel>
 
             <!-- 결제 버튼 -->
-            <Button Grid.Row="3" Width="150" Height="50" Content="결제하기" FontSize="14" Foreground="White" Cursor="Hand" Margin="0,15">
+            <Button Grid.Row="3" Width="150" Height="50" Content="결제하기" FontSize="14" Foreground="White" Cursor="Hand" Margin="0,15"
+                    Command="{Binding PaymentCommand}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Grid>
