@@ -149,7 +149,57 @@ namespace SelfPosDesk.ViewModel
 
         private async Task HandleServerData(string data)
         {
+            string[] dataParts = data.Split('/');
 
+            ACT actType = (ACT)int.Parse(dataParts[0]); 
+            string itemInfo = dataParts[1];
+            string receiveMsg = dataParts[2];
+
+            switch (actType)
+            {
+                case ACT.ItemAble:
+                    string productName = itemInfo;
+                    int productPrice = int.Parse(receiveMsg);
+                    AddProductToCart(productName, productPrice);
+                    break;
+                case ACT.ItemUnable:
+
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+        private async void AddProductToCart(string productName, int productPrice)
+        {
+            var existingProduct = Products.FirstOrDefault(p => p.ProductName == productName);
+
+            if (existingProduct != null)
+            {
+                // 동일 상품이 이미 있는 경우 수량 증가 및 금액 계산
+                existingProduct.Quantity++;
+                existingProduct.TotalPrice = existingProduct.Price * existingProduct.Quantity;
+                UpdateTotalAllAmount();
+            }
+            else
+            {
+                // 새로운 상품 추가
+                Products.Add(new Product
+                {
+                    ProductName = productName,
+                    Price = productPrice,
+                    Quantity = 1,
+                    TotalPrice = productPrice
+                });
+            }
+
+            // 총 금액 업데이트
+            UpdateTotalAmount();
+            UpdateTotalcount();
+            UpdateTotalAllAmount();
+            // 아두이노 부저 울리기
+            SendBuzzSignal();
         }
 
         private void InitializeSerialPort()
@@ -255,36 +305,8 @@ namespace SelfPosDesk.ViewModel
 
             if (!string.IsNullOrEmpty(productName) && decimal.TryParse(priceText, out decimal price))
             {
+                // 서버로 QR코드 상품 정보 전송
                 await clientManager.SendData((int)ACT.ItemCheck, productName, priceText);
-
-
-                var existingProduct = Products.FirstOrDefault(p => p.ProductName == productName); 
-                
-                if (existingProduct != null)
-                {
-                    // 동일 상품이 이미 있는 경우 수량 증가 및 금액 계산
-                    existingProduct.Quantity++;
-                    existingProduct.TotalPrice = existingProduct.Price * existingProduct.Quantity;
-                    UpdateTotalAllAmount();
-                }
-                else
-                {
-                    // 새로운 상품 추가
-                    Products.Add(new Product
-                    {
-                        ProductName = productName,
-                        Price = price,
-                        Quantity = 1,
-                        TotalPrice = price
-                    });
-                }
-
-                // 총 금액 업데이트
-                UpdateTotalAmount();
-                UpdateTotalcount();
-                UpdateTotalAllAmount();
-                // 아두이노 부저 울리기
-                SendBuzzSignal();
             }
         }
 

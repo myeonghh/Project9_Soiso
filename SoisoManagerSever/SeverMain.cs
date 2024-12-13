@@ -158,7 +158,7 @@ namespace SoisoManagerSever
             string itemName = itemInfo;
             string itemPrice = receiveMsg;
 
-            // SQL 쿼리 (INNER JOIN 사용)
+            // SQL 쿼리
             string query = @"
                     SELECT 
                         p.name,
@@ -182,7 +182,7 @@ namespace SoisoManagerSever
                     if (!reader.HasRows)
                     {
                         // 결과가 없는 경우 등록되지 않은 상품
-                        await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}:재고에 등록되지 않은 상품");
+                        await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}: 재고에 등록되지 않은 상품");
                     }
 
                     while (reader.Read())
@@ -193,17 +193,17 @@ namespace SoisoManagerSever
                         if (productState == 0)
                         {
                             // 판매 중지된 상품
-                            await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}:재고에 등록되지 않은 상품");
+                            await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}: 판매 중지된 상품");
                         }
-                        else if (inventoryQuantity < itemQuantity)
+                        else if (inventoryQuantity <= 0)
                         {
                             // 재고 부족
-                            buyDeniedItems.Add($"{itemName}:재고 부족");
+                            await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}:재고 부족");
                         }
                         else
                         {
                             // 구매 가능
-                            successfulPurchases.Add((itemName, itemQuantity));
+                            await SendMessage(clientSocket, (int)ACT.ItemAble, itemPrice, itemPrice);
                         }
                     }
                 }
@@ -211,7 +211,7 @@ namespace SoisoManagerSever
             catch (Exception ex)
             {
                 Console.WriteLine($"오류 발생: {ex.Message}");
-                buyDeniedItems.Add($"{itemName}: 데이터베이스 처리 오류");
+                await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}: 데이터베이스 처리 오류");
             }
 
         }

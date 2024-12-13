@@ -70,7 +70,7 @@ namespace SelfPosDesk.Helper
                     Debug.WriteLine($"{header} 헤더 수신");
                     string[] parts = header.Split('/');
                     int actType = int.Parse(parts[0]);    // 데이터 타입
-                    string senderId = parts[1];          // 송신자 ID
+                    string itemInfo = parts[1];          // 송신자 ID
                     int dataLength = int.Parse(parts[2]); // 본문 데이터 길이
 
                     // 2. 본문 데이터 읽기 (dataLength 크기만큼)
@@ -88,7 +88,7 @@ namespace SelfPosDesk.Helper
                     {
                         string body = Encoding.UTF8.GetString(bodyBuffer); // UTF-8로 디코딩
                         Debug.WriteLine($"{body} 문자열 수신");
-                        await OnDataReceived($"{actType}/{senderId}/{body}");
+                        await OnDataReceived($"{actType}/{itemInfo}/{body}");
 
                     }
                 }
