@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace SelfPosDesk.Helper
 {
@@ -51,45 +52,22 @@ namespace SelfPosDesk.Helper
         // 데이터를 서버로 비동기로 수신
         private async Task ReceiveData()
         {
+            byte[] buffer = new byte[2048]; // 데이터를 저장할 버퍼
             try
             {
                 while (true) // 연결된 동안 계속 실행
                 {
-                    // 1. 헤더 읽기 (128바이트)
-                    byte[] headerBuffer = new byte[128];
-                    int headerBytesRead = 0;
-                    while (headerBytesRead < headerBuffer.Length)
+                    int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length); // 서버로부터 데이터 읽기
+                    if (bytesRead > 0) // 데이터가 있으면
                     {
-                        int bytesRead = await stream.ReadAsync(headerBuffer, headerBytesRead, headerBuffer.Length - headerBytesRead);
-                        if (bytesRead == 0) throw new Exception("서버 연결이 종료되었습니다.");
-                        headerBytesRead += bytesRead;
-                    }
+                        string data = Encoding.UTF8.GetString(buffer, 0, bytesRead); // UTF-8로 디코딩
 
-                    // 헤더 파싱 (actType, senderId, dataLength 추출)
-                    string header = Encoding.UTF8.GetString(headerBuffer).TrimEnd('\0');
-                    Debug.WriteLine($"{header} 헤더 수신");
-                    string[] parts = header.Split('/');
-                    int actType = int.Parse(parts[0]);    // 데이터 타입
-                    string itemInfo = parts[1];          // 송신자 ID
-                    int dataLength = int.Parse(parts[2]); // 본문 데이터 길이
-
-                    // 2. 본문 데이터 읽기 (dataLength 크기만큼)
-                    byte[] bodyBuffer = new byte[dataLength];
-                    int totalBytesRead = 0;
-                    while (totalBytesRead < dataLength)
-                    {
-                        int bytesRead = await stream.ReadAsync(bodyBuffer, totalBytesRead, dataLength - totalBytesRead);
-                        if (bytesRead == 0) throw new Exception("서버 연결이 종료되었습니다.");
-                        totalBytesRead += bytesRead;
-                    }
-
-                    // 3. 데이터 처리
-                    if (OnDataReceived != null)
-                    {
-                        string body = Encoding.UTF8.GetString(bodyBuffer); // UTF-8로 디코딩
-                        Debug.WriteLine($"{body} 문자열 수신");
-                        await OnDataReceived($"{actType}/{itemInfo}/{body}");
-
+                        // 데이터 처리
+                        if (OnDataReceived != null)
+                        {
+                            Debug.WriteLine($"{data} 문자열 수신");
+                            await OnDataReceived(data);
+                        }
                     }
                 }
             }
@@ -104,21 +82,13 @@ namespace SelfPosDesk.Helper
         {
             try
             {
-                // 1. 메시지 데이터 준비
+
+                string data = $"{actType}/{itemInfo}/{msg}";
+                // 본문 데이터 준비
                 byte[] bodyBytes = Encoding.UTF8.GetBytes(msg);
+                byte[] bytes = Encoding.UTF8.GetBytes(data); // UTF-8로 인코딩
+                await stream.WriteAsync(bytes, 0, bytes.Length); // 데이터를 서버로 전송
 
-                // 2. 헤더 생성 (128바이트: actType, senderId, 데이터 길이 포함)
-                string header = $"{actType}/{itemInfo}/{bodyBytes.Length}";
-                byte[] headerBytes = Encoding.UTF8.GetBytes(header.PadRight(128, '\0')); // 128바이트로 고정 길이 패딩
-
-                // 3. 헤더와 본문 데이터 결합
-                byte[] dataToSend = new byte[headerBytes.Length + bodyBytes.Length];
-                Array.Copy(headerBytes, 0, dataToSend, 0, headerBytes.Length); // 헤더 복사
-                Array.Copy(bodyBytes, 0, dataToSend, headerBytes.Length, bodyBytes.Length); // 본문 복사
-
-                // 4. 데이터 전송
-                await stream.WriteAsync(dataToSend, 0, dataToSend.Length);
-                Console.WriteLine($"데이터 전송 완료: {dataToSend.Length}바이트 전송");
             }
             catch (Exception ex)
             {

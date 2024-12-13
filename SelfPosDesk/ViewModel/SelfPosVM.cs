@@ -27,7 +27,7 @@ namespace SelfPosDesk.ViewModel
         private SerialPort _serialPort; // 아두이노 시리얼 포트
         private TcpClientHelper clientManager; // tcp통신 클래스 객체 선언
         private bool connectSuccess;
-
+        private CustomDialog currentDialog;
         private enum ACT { ItemCheck, ItemAble, ItemUnable, BuyItem };
 
         private readonly TimeSpan _processingDelay = TimeSpan.FromSeconds(3); // QR 처리 지연 시간
@@ -108,11 +108,11 @@ namespace SelfPosDesk.ViewModel
             Products = new ObservableCollection<Product>();
             
             CheckWebcamDevices();
-                        
+
             _qrProcessor = new QRCodeProcessor(); // QR 코드 프로세서 초기화
             _qrProcessor.CameraFrameUpdated += OnPreviewFrameAvailable; // 카메라 프레임 이벤트 연결
             _qrProcessor.QRCodeScanned += OnQRCodeScanned; // QR 코드 스캔 이벤트 연결
-                       
+
             InitializeSerialPort(); // 아두이노 시리얼 포트 초기화
 
             // 명령어 초기화
@@ -127,6 +127,7 @@ namespace SelfPosDesk.ViewModel
             // 서버 연결
             SeverConnect();
         }
+
 
         private async void SeverConnect()
         {
@@ -163,12 +164,33 @@ namespace SelfPosDesk.ViewModel
                     AddProductToCart(productName, productPrice);
                     break;
                 case ACT.ItemUnable:
-
+                    ShowCustomDialog(receiveMsg); // 판매 불가 다이얼로그 표시                                                
+                    SendBuzzSignal(); // 아두이노 부저 울리기
                     break;
                 default:
                     break;
             }
 
+        }
+
+        // 커스텀 다이얼로그를 표시하는 메서드
+        private void ShowCustomDialog(string message)
+        {
+            // 기존에 활성화된 다이얼로그가 있으면 닫기
+            if (currentDialog != null)
+            {
+                currentDialog.Close();
+                currentDialog = null;
+            }
+
+            // 새로운 다이얼로그 생성
+            currentDialog = new CustomDialog(message)
+            {
+                // 현재 활성 View를 Owner로 설정
+                Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive),
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner // 부모 창 중심에 표시
+            };
+            currentDialog.Show();
         }
 
         private async void AddProductToCart(string productName, int productPrice)
@@ -225,12 +247,13 @@ namespace SelfPosDesk.ViewModel
         }
         private void CheckWebcamDevices()
         {
+
             var videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 
             if (videoDevices.Count == 0)
             {
                 Console.WriteLine("웹캠이 연결되지 않았습니다.");
-                MessageBox.Show("웹캠이 연결되지 않았습니다.");
+                ShowCustomDialog("웹캠이 연결되지 않았습니다.");
                 return;
             }
 
@@ -238,6 +261,7 @@ namespace SelfPosDesk.ViewModel
             {
                 Console.WriteLine($"웹캠 발견: {device.Name}");
             }
+
         }
 
         private void StartCamera()
@@ -254,7 +278,7 @@ namespace SelfPosDesk.ViewModel
         {
             if (Products == null || Products.Count == 0)
             {
-                MessageBox.Show("장바구니에 상품이 없습니다.");
+                ShowCustomDialog("장바구니에 상품이 없습니다.");
                 return;
             }
 
@@ -268,7 +292,7 @@ namespace SelfPosDesk.ViewModel
                 {
                     // 결제한 상품 정보 서버로 전송
                     await clientManager.SendData((int)ACT.BuyItem, AlltotalAmount.ToString(), serializedProducts);
-                    MessageBox.Show("상품 정보를 서버로 전송했습니다.");
+                    ShowCustomDialog("결제가 완료되었습니다.");
 
                     // 장바구니 초기화
                     Products = new ObservableCollection<Product>();
@@ -279,12 +303,12 @@ namespace SelfPosDesk.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"상품 정보를 전송하는 데 실패했습니다: {ex.Message}");
+                    ShowCustomDialog($"상품 정보를 전송하는 데 실패했습니다: {ex.Message}");
                 }
             }
             else
             {
-                MessageBox.Show("서버와 연결되어 있지 않습니다.");
+                ShowCustomDialog("서버와 연결되어 있지 않습니다.");
             }
         }
 

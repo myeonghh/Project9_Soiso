@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,15 @@ namespace SelfPosDesk
         public MainWindow()
         {
             InitializeComponent();
+
+            // Closing 이벤트 구독
+            this.Closing += OnWindowClosing;
+        }
+
+        private void OnWindowClosing(object sender, CancelEventArgs e)
+        {
+            // 강제로 애플리케이션 종료 (필요 시)
+            System.Environment.Exit(0);
         }
     }
 }

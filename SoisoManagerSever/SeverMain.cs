@@ -18,6 +18,8 @@ using ZstdSharp.Unsafe;
 using Mysqlx.Crud;
 using QRCoder;
 using System.Reflection.PortableExecutable;
+using System.Reflection;
+using System.Data;
 
 
 
@@ -70,55 +72,26 @@ namespace SoisoManagerSever
         private async Task HandleClient(TcpClient clientSocket)
         {
             NetworkStream stream = clientSocket.GetStream();
-            byte[] headerBuffer = new byte[128]; // 고정 크기 헤더 버퍼
+            byte[] buffer = new byte[2048];
 
             try
             {
                 while (true)
                 {
-                    // 1. 고정된 128바이트 헤더 읽기
-                    int headerBytesRead = 0;
-                    while (headerBytesRead < headerBuffer.Length)
+                    int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length); // 데이터를 read
+                    if (bytesRead > 0) // 데이터가 있으면
                     {
-                        int bytesRead = await stream.ReadAsync(headerBuffer, headerBytesRead, headerBuffer.Length - headerBytesRead);
-                        if (bytesRead == 0)
-                        {
-                            Console.WriteLine("클라이언트 연결 종료");
-                            return;
-                        }
-                        headerBytesRead += bytesRead;
+                        string data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        Console.WriteLine($"데이터 수신 완료: {data}"); // 수신된 데이터 출력
+
+                        string[] parts = data.Split('/');
+                        ACT actType = (ACT)int.Parse(parts[0]);
+                        string itemInfo = parts[1];
+                        string receiveMsg = parts[2];
+
+                        await ReceiveDataOperate(clientSocket, actType, itemInfo, receiveMsg);
                     }
-
-                    // 2. 헤더 파싱 (actType, senderId, 데이터 크기 읽기)
-                    string header = Encoding.UTF8.GetString(headerBuffer).TrimEnd('\0');
-                    string[] parts = header.Split('/');
-                    ACT actType = (ACT)int.Parse(parts[0]); // actType
-                    string itemInfo = parts[1];             // senderId
-                    int dataLength = int.Parse(parts[2]);   // 데이터 크기
-
-                    Console.WriteLine($"헤더 수신: 타입={actType}, 상품 정보={itemInfo}, 데이터 크기={dataLength}");
-
-                    // 3. 데이터 수신 (dataLength 크기만큼 읽기)
-                    byte[] dataBuffer = new byte[dataLength];
-                    int totalDataBytesRead = 0;
-
-                    while (totalDataBytesRead < dataLength)
-                    {
-                        int bytesRead = await stream.ReadAsync(dataBuffer, totalDataBytesRead, dataLength - totalDataBytesRead);
-                        if (bytesRead == 0)
-                        {
-                            Console.WriteLine("데이터 수신 중 연결 종료");
-                            return;
-                        }
-                        totalDataBytesRead += bytesRead;
-                    }
-              
-                    string receiveMsg = Encoding.UTF8.GetString(dataBuffer);
-                    Console.WriteLine($"수신 데이터: {receiveMsg}");
-
-                    // 서버 데이터 수신 작업 처리 메서드 호출
-                    await ReceiveDataOperate(clientSocket, actType, itemInfo, receiveMsg);
-                }
+                }               
             }
             catch (Exception ex)
             {
@@ -182,7 +155,7 @@ namespace SoisoManagerSever
                     if (!reader.HasRows)
                     {
                         // 결과가 없는 경우 등록되지 않은 상품
-                        await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}: 재고에 등록되지 않은 상품");
+                        await SendMessage(clientSocket, (int)ACT.ItemUnable, "", $"\"{itemName}\"\n[재고에 등록되지 않은 상품]");
                     }
 
                     while (reader.Read())
@@ -193,17 +166,17 @@ namespace SoisoManagerSever
                         if (productState == 0)
                         {
                             // 판매 중지된 상품
-                            await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}: 판매 중지된 상품");
+                            await SendMessage(clientSocket, (int)ACT.ItemUnable, "", $"\"{itemName}\"\n[판매 중지된 상품]");
                         }
                         else if (inventoryQuantity <= 0)
                         {
                             // 재고 부족
-                            await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}:재고 부족");
+                            await SendMessage(clientSocket, (int)ACT.ItemUnable, "", $"\"{itemName}\"\n[재고 부족]");
                         }
                         else
                         {
                             // 구매 가능
-                            await SendMessage(clientSocket, (int)ACT.ItemAble, itemPrice, itemPrice);
+                            await SendMessage(clientSocket, (int)ACT.ItemAble, itemName, itemPrice);
                         }
                     }
                 }
@@ -211,8 +184,9 @@ namespace SoisoManagerSever
             catch (Exception ex)
             {
                 Console.WriteLine($"오류 발생: {ex.Message}");
-                await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}: 데이터베이스 처리 오류");
+                await SendMessage(clientSocket, (int)ACT.ItemUnable, "", $"\"{itemName}\"\n[데이터베이스 처리 오류]");
             }
+
 
         }
 
@@ -233,67 +207,6 @@ namespace SoisoManagerSever
                 int itemPrice = int.Parse(itemInfoParts[1]); // 상품 가격
                 int itemQuantity = int.Parse(itemInfoParts[2]); // 상품 수량
 
-                // SQL 쿼리 (INNER JOIN 사용)
-                string query = @"
-                    SELECT 
-                        p.name,
-                        p.state,
-                        i.quantity
-                    FROM 
-                        products p
-                    INNER JOIN 
-                        inventory i ON p.id = i.product_id
-                    WHERE 
-                        p.name = @ProductName;
-                ";
-
-                try
-                {
-                    var command = dbManager.CreateCommand(query);
-                    command.Parameters.AddWithValue("@ProductName", itemName);
-
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        if (!reader.HasRows)
-                        {
-                            // 결과가 없는 경우 등록되지 않은 상품
-                            buyDeniedItems.Add($"{itemName}:재고에 등록되지 않은 상품");
-                            continue;
-                        }
-
-                        while (reader.Read())
-                        {
-                            int productState = Convert.ToInt32(reader["state"]);
-                            int inventoryQuantity = Convert.ToInt32(reader["quantity"]);
-
-                            if (productState == 0)
-                            {
-                                // 판매 중지된 상품
-                                buyDeniedItems.Add($"{itemName}:판매 중지된 상품");
-                            }
-                            else if (inventoryQuantity < itemQuantity)
-                            {
-                                // 재고 부족
-                                buyDeniedItems.Add($"{itemName}:재고 부족");
-                            }
-                            else
-                            {
-                                // 구매 가능
-                                successfulPurchases.Add((itemName, itemQuantity));
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"오류 발생: {ex.Message}");
-                    buyDeniedItems.Add($"{itemName}: 데이터베이스 처리 오류");
-                }
-            }
-
-            // 성공적으로 구매된 상품의 재고 차감
-            foreach (var purchase in successfulPurchases)
-            {
                 string updateQuery = @"
                     UPDATE inventory i
                     JOIN products p ON i.product_id = p.id
@@ -304,10 +217,11 @@ namespace SoisoManagerSever
                 try
                 {
                     var updateCommand = dbManager.CreateCommand(updateQuery);
-                    updateCommand.Parameters.AddWithValue("@Quantity", purchase.Quantity);
-                    updateCommand.Parameters.AddWithValue("@ProductName", purchase.ItemName);
+                    updateCommand.Parameters.AddWithValue("@Quantity", itemQuantity);
+                    updateCommand.Parameters.AddWithValue("@ProductName", itemName);
 
                     await updateCommand.ExecuteNonQueryAsync();
+                    Console.WriteLine($"재고 업데이트 완료");
                 }
                 catch (Exception ex)
                 {
@@ -315,46 +229,99 @@ namespace SoisoManagerSever
                 }
             }
 
-            if (buyDeniedItems.Count > 0)
+            // 재고 업데이트 후 매출 테이블 업데이트 실행 (한 번만 호출)
+            try
             {
-                // 예외 상품 목록 클라이언트로 전송
-                string deniedMessage = string.Join("\n", buyDeniedItems);
-                Console.WriteLine($"구매 실패 항목:\n{deniedMessage}");
-                // 클라이언트로 전송 로직 추가
-
+                await UpdateRevenue(totalPrice);
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("모든 상품 구매");
+                Console.WriteLine($"매출 업데이트 중 오류 발생: {ex.Message}");
+            }
+
+        }
+
+        // 매출 테이블 업데이트 메서드
+        private async Task UpdateRevenue(int totalPrice)
+        {
+            string todayDate = DateTime.Now.ToString("yyyy-MM-dd"); // 오늘 날짜
+
+            try
+            {
+                // 1. 오늘 날짜의 매출 데이터를 확인
+                string selectQuery = @"
+                    SELECT id, total_revenue 
+                    FROM revenue 
+                    WHERE date = @TodayDate;
+                ";
+
+                var selectCommand = dbManager.CreateCommand(selectQuery);
+                selectCommand.Parameters.AddWithValue("@TodayDate", todayDate);
+
+                using (var reader = await selectCommand.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows)
+                    {
+                        // 오늘 날짜의 데이터가 있는 경우
+                        while (reader.Read())
+                        {
+                            int revenueId = reader.GetInt32("id");
+                            decimal currentRevenue = reader.GetDecimal("total_revenue");
+
+                            reader.Close(); // Reader 닫기
+
+                            // 2. 기존 매출액에 더하기
+                            string updateQuery = @"
+                                UPDATE revenue 
+                                SET total_revenue = @NewTotalRevenue
+                                WHERE id = @RevenueId;
+                            ";
+
+                            var updateCommand = dbManager.CreateCommand(updateQuery);
+                            updateCommand.Parameters.AddWithValue("@NewTotalRevenue", currentRevenue + totalPrice);
+                            updateCommand.Parameters.AddWithValue("@RevenueId", revenueId);
+
+                            await updateCommand.ExecuteNonQueryAsync();
+                            Console.WriteLine($"매출 업데이트 완료: {totalPrice} 추가");
+                            return; // 이미 업데이트를 완료했으므로 메서드 종료
+                        }
+                    }
+                    else
+                    {
+                        reader.Close(); // Reader 닫기
+                        // 3. 새로운 날짜 생성해서 매출액 입력
+                        string insertQuery = @"
+                            INSERT INTO revenue (date, total_revenue) 
+                            VALUES (@TodayDate, @TotalRevenue);
+                        ";
+
+                        var insertCommand = dbManager.CreateCommand(insertQuery);
+                        insertCommand.Parameters.AddWithValue("@TodayDate", todayDate);
+                        insertCommand.Parameters.AddWithValue("@TotalRevenue", totalPrice);
+
+                        await insertCommand.ExecuteNonQueryAsync();
+                        Console.WriteLine($"새 매출 행 추가 완료: {totalPrice}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"매출 업데이트 중 오류 발생: {ex.Message}");
             }
         }
 
 
         // 메시지 전송
-        private async Task SendMessage(TcpClient clientSocket, int actType, string msg = "", string itemInfo = "")
+        private async Task SendMessage(TcpClient clientSocket, int actType, string itemInfo = "", string msg = "")
         {
             try
             {
                 NetworkStream stream = clientSocket.GetStream();
 
-                // 1. 메시지 데이터 준비
-                byte[] bodyBytes;
-
-                bodyBytes = Encoding.UTF8.GetBytes(msg); // UTF-8로 인코딩
-                
-                // 2. 헤더 준비 (128바이트: actType, senderId, 데이터 길이 포함)
-                string header = $"{actType}/{itemInfo}/{bodyBytes.Length}";
-                byte[] headerBytes = Encoding.UTF8.GetBytes(header.PadRight(128, '\0')); // 128바이트 고정 길이로 패딩
-
-                // 3. 헤더와 데이터 결합
-                byte[] fullData = new byte[headerBytes.Length + bodyBytes.Length];
-                Array.Copy(headerBytes, 0, fullData, 0, headerBytes.Length); // 헤더 복사
-                Array.Copy(bodyBytes, 0, fullData, headerBytes.Length, bodyBytes.Length); // 본문 데이터 복사
-
-                // 4. 데이터 전송
-                await stream.WriteAsync(fullData, 0, fullData.Length);
-
-                Console.WriteLine($"데이터 전송 완료: {Encoding.UTF8.GetString(fullData)}");
+                string fullmsg = $"{actType}/{itemInfo}/{msg}";
+                byte[] data = Encoding.UTF8.GetBytes(fullmsg); // 메시지를 UTF-8로 인코딩
+                await stream.WriteAsync(data, 0, data.Length);
+                Console.WriteLine($"데이터 전송 완료: {Encoding.UTF8.GetString(data)}");
             }
             catch (Exception ex)
             {
