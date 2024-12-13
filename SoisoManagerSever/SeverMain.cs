@@ -33,7 +33,7 @@ namespace SoisoManagerSever
         private DatabaseManager dbManager = new DatabaseManager();
         private int cnum = 1;
 
-        private enum ACT { ProductInput };
+        private enum ACT { ItemCheck, ItemAble, ItemUnable, BuyItem };
 
         // 서버 시작
         public async Task StartServer(string ip, int port)
@@ -112,11 +112,12 @@ namespace SoisoManagerSever
                         }
                         totalDataBytesRead += bytesRead;
                     }
-
-                    Console.WriteLine($"데이터 수신 완료: 크기={dataBuffer.Length}바이트");
+              
+                    string receiveMsg = Encoding.UTF8.GetString(dataBuffer);
+                    Console.WriteLine($"수신 데이터: {receiveMsg}");
 
                     // 서버 데이터 수신 작업 처리 메서드 호출
-                    await ReceiveDataOperate(clientSocket, actType, itemInfo, dataBuffer);
+                    await ReceiveDataOperate(clientSocket, actType, itemInfo, receiveMsg);
                 }
             }
             catch (Exception ex)
@@ -136,21 +137,201 @@ namespace SoisoManagerSever
         }
 
         // 서버 수신 작업 처리
-        private async Task ReceiveDataOperate(TcpClient clientSocket, ACT actType, string itemInfo, byte[] receiveData)
+        private async Task ReceiveDataOperate(TcpClient clientSocket, ACT actType, string itemInfo, string receiveMsg)
         {
 
             switch (actType)
             {
-                case ACT.ProductInput:
-
+                case ACT.ItemCheck:
+                    await ItemPossibleCheck(clientSocket, itemInfo, receiveMsg);
+                    break;
+                case ACT.BuyItem:
+                    await DatabaseUpdate(clientSocket, itemInfo, receiveMsg);
                     break;
                 default:
                     break;
             }
         }
 
+        private async Task ItemPossibleCheck(TcpClient clientSocket, string itemInfo, string receiveMsg)
+        {
+            string itemName = itemInfo;
+            string itemPrice = receiveMsg;
+
+            // SQL 쿼리 (INNER JOIN 사용)
+            string query = @"
+                    SELECT 
+                        p.name,
+                        p.state,
+                        i.quantity
+                    FROM 
+                        products p
+                    INNER JOIN 
+                        inventory i ON p.id = i.product_id
+                    WHERE 
+                        p.name = @ProductName;
+                ";
+
+            try
+            {
+                var command = dbManager.CreateCommand(query);
+                command.Parameters.AddWithValue("@ProductName", itemName);
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (!reader.HasRows)
+                    {
+                        // 결과가 없는 경우 등록되지 않은 상품
+                        await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}:재고에 등록되지 않은 상품");
+                    }
+
+                    while (reader.Read())
+                    {
+                        int productState = Convert.ToInt32(reader["state"]);
+                        int inventoryQuantity = Convert.ToInt32(reader["quantity"]);
+
+                        if (productState == 0)
+                        {
+                            // 판매 중지된 상품
+                            await SendMessage(clientSocket, (int)ACT.ItemUnable, $"{itemName}:재고에 등록되지 않은 상품");
+                        }
+                        else if (inventoryQuantity < itemQuantity)
+                        {
+                            // 재고 부족
+                            buyDeniedItems.Add($"{itemName}:재고 부족");
+                        }
+                        else
+                        {
+                            // 구매 가능
+                            successfulPurchases.Add((itemName, itemQuantity));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"오류 발생: {ex.Message}");
+                buyDeniedItems.Add($"{itemName}: 데이터베이스 처리 오류");
+            }
+
+        }
+
+
+
+        private async Task DatabaseUpdate(TcpClient clientSocket, string itemInfo, string receiveMsg)
+        {
+            int totalPrice = int.Parse(itemInfo);
+            List<string> buyDeniedItems = new List<string>(); // 구매가 거절된 상품 리스트
+            List<(string ItemName, int Quantity)> successfulPurchases = new List<(string, int)>(); // 성공적으로 구매된 상품
+
+            string[] buyItems = receiveMsg.Split('|');
+
+            foreach (string item in buyItems)
+            {
+                string[] itemInfoParts = item.Split(',');
+                string itemName = itemInfoParts[0]; // 상품 이름
+                int itemPrice = int.Parse(itemInfoParts[1]); // 상품 가격
+                int itemQuantity = int.Parse(itemInfoParts[2]); // 상품 수량
+
+                // SQL 쿼리 (INNER JOIN 사용)
+                string query = @"
+                    SELECT 
+                        p.name,
+                        p.state,
+                        i.quantity
+                    FROM 
+                        products p
+                    INNER JOIN 
+                        inventory i ON p.id = i.product_id
+                    WHERE 
+                        p.name = @ProductName;
+                ";
+
+                try
+                {
+                    var command = dbManager.CreateCommand(query);
+                    command.Parameters.AddWithValue("@ProductName", itemName);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (!reader.HasRows)
+                        {
+                            // 결과가 없는 경우 등록되지 않은 상품
+                            buyDeniedItems.Add($"{itemName}:재고에 등록되지 않은 상품");
+                            continue;
+                        }
+
+                        while (reader.Read())
+                        {
+                            int productState = Convert.ToInt32(reader["state"]);
+                            int inventoryQuantity = Convert.ToInt32(reader["quantity"]);
+
+                            if (productState == 0)
+                            {
+                                // 판매 중지된 상품
+                                buyDeniedItems.Add($"{itemName}:판매 중지된 상품");
+                            }
+                            else if (inventoryQuantity < itemQuantity)
+                            {
+                                // 재고 부족
+                                buyDeniedItems.Add($"{itemName}:재고 부족");
+                            }
+                            else
+                            {
+                                // 구매 가능
+                                successfulPurchases.Add((itemName, itemQuantity));
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"오류 발생: {ex.Message}");
+                    buyDeniedItems.Add($"{itemName}: 데이터베이스 처리 오류");
+                }
+            }
+
+            // 성공적으로 구매된 상품의 재고 차감
+            foreach (var purchase in successfulPurchases)
+            {
+                string updateQuery = @"
+                    UPDATE inventory i
+                    JOIN products p ON i.product_id = p.id
+                    SET i.quantity = i.quantity - @Quantity
+                    WHERE p.name = @ProductName;
+                ";
+
+                try
+                {
+                    var updateCommand = dbManager.CreateCommand(updateQuery);
+                    updateCommand.Parameters.AddWithValue("@Quantity", purchase.Quantity);
+                    updateCommand.Parameters.AddWithValue("@ProductName", purchase.ItemName);
+
+                    await updateCommand.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"재고 업데이트 중 오류 발생: {ex.Message}");
+                }
+            }
+
+            if (buyDeniedItems.Count > 0)
+            {
+                // 예외 상품 목록 클라이언트로 전송
+                string deniedMessage = string.Join("\n", buyDeniedItems);
+                Console.WriteLine($"구매 실패 항목:\n{deniedMessage}");
+                // 클라이언트로 전송 로직 추가
+
+            }
+            else
+            {
+                Console.WriteLine("모든 상품 구매");
+            }
+        }
+
+
         // 메시지 전송
-        private async Task SendMessage(TcpClient clientSocket, int actType, string msg = "", string senderId = "", byte[] imgData = null)
+        private async Task SendMessage(TcpClient clientSocket, int actType, string msg = "", string itemInfo = "")
         {
             try
             {
@@ -158,17 +339,11 @@ namespace SoisoManagerSever
 
                 // 1. 메시지 데이터 준비
                 byte[] bodyBytes;
-                if ((ACT)actType == ACT.ProductInput) // 이미지 전송
-                {
-                    bodyBytes = imgData; // 이미지 데이터
-                }
-                else // 메시지 전송 (텍스트)
-                {
-                    bodyBytes = Encoding.UTF8.GetBytes(msg); // UTF-8로 인코딩
-                }
 
+                bodyBytes = Encoding.UTF8.GetBytes(msg); // UTF-8로 인코딩
+                
                 // 2. 헤더 준비 (128바이트: actType, senderId, 데이터 길이 포함)
-                string header = $"{actType}/{senderId}/{bodyBytes.Length}";
+                string header = $"{actType}/{itemInfo}/{bodyBytes.Length}";
                 byte[] headerBytes = Encoding.UTF8.GetBytes(header.PadRight(128, '\0')); // 128바이트 고정 길이로 패딩
 
                 // 3. 헤더와 데이터 결합
@@ -179,8 +354,7 @@ namespace SoisoManagerSever
                 // 4. 데이터 전송
                 await stream.WriteAsync(fullData, 0, fullData.Length);
 
-                if ((ACT)actType != ACT.ProductInput)
-                    Console.WriteLine($"데이터 전송 완료: {Encoding.UTF8.GetString(fullData)}");
+                Console.WriteLine($"데이터 전송 완료: {Encoding.UTF8.GetString(fullData)}");
             }
             catch (Exception ex)
             {

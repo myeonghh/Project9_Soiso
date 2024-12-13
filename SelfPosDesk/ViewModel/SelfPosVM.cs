@@ -13,6 +13,7 @@ using System.Windows;
 using System.Diagnostics;
 using ZstdSharp.Unsafe;
 using SelfPosDesk.Helper;
+using System.Windows.Interop;
 
 
 namespace SelfPosDesk.ViewModel
@@ -27,7 +28,7 @@ namespace SelfPosDesk.ViewModel
         private TcpClientHelper clientManager; // tcp통신 클래스 객체 선언
         private bool connectSuccess;
 
-        private enum ACT { BuyItem };
+        private enum ACT { ItemCheck, ItemAble, ItemUnable, BuyItem };
 
         private readonly TimeSpan _processingDelay = TimeSpan.FromSeconds(3); // QR 처리 지연 시간
         private DateTime _lastProcessedTime = DateTime.MinValue; // 마지막 처리 시간
@@ -237,7 +238,7 @@ namespace SelfPosDesk.ViewModel
             }
         }
 
-        private void OnQRCodeScanned(object sender, string qrCodeData)
+        private async void OnQRCodeScanned(object sender, string qrCodeData)
         {
             // QR 코드 처리 지연 시간 확인
             if (DateTime.Now - _lastProcessedTime < _processingDelay)
@@ -254,8 +255,11 @@ namespace SelfPosDesk.ViewModel
 
             if (!string.IsNullOrEmpty(productName) && decimal.TryParse(priceText, out decimal price))
             {
-                var existingProduct = Products.FirstOrDefault(p => p.ProductName == productName);
+                await clientManager.SendData((int)ACT.ItemCheck, productName, priceText);
 
+
+                var existingProduct = Products.FirstOrDefault(p => p.ProductName == productName); 
+                
                 if (existingProduct != null)
                 {
                     // 동일 상품이 이미 있는 경우 수량 증가 및 금액 계산
@@ -274,6 +278,7 @@ namespace SelfPosDesk.ViewModel
                         TotalPrice = price
                     });
                 }
+
                 // 총 금액 업데이트
                 UpdateTotalAmount();
                 UpdateTotalcount();
@@ -304,8 +309,6 @@ namespace SelfPosDesk.ViewModel
             Debug.WriteLine($"CameraPreview 설정됨: {CameraPreview}");
             OnPropertyChanged(nameof(CameraPreview)); // 강제 갱신
         }
-
-
 
         private void SendBuzzSignal()
         {
