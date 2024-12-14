@@ -13,23 +13,136 @@
 
     <Grid Background="White">
         <!-- 프로그램 로고 -->
-        <StackPanel VerticalAlignment="Top" Margin="0,30,0,0" HorizontalAlignment="Center">
-            <Image x:Name="logoImage" Source="/View/logo.png" Width="359" Height="146"/>
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="15,15,0,0" >
+            <Image x:Name="logoImage" Source="/View/logo.png" Width="150" Height="35" />
+        </StackPanel>
+        <TextBlock Text="소이소 관리자 프로그램" Foreground="#EC4653" Margin="0,100" FontSize="22"
+                                HorizontalAlignment="Center" TextAlignment="Center" FontWeight="Bold" />
+        <!-- 버튼 섹션 -->
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
+            <!-- 상품 등록 버튼 -->
+            <StackPanel Orientation="Vertical" Margin="20,0">
+                <Image Source="/image/instock.png" Width="100" Height="100" />
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="LightGray" Margin="0, 10">
+                    <Button Content="상품 등록" Command="{Binding OpenInStockViewCommand}" Height="30" Width="150" Margin="0, 4">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#3E3E3E" />
+                                <Setter Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="ButtonBorder"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    CornerRadius="15">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Content="{TemplateBinding Content}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <!-- Hover 상태에서 배경 변경 -->
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                                <!-- 클릭 상태에서 배경 변경 -->
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Border>
+            </StackPanel>
+
+            <!-- 재고 관리 버튼 -->
+            <StackPanel Orientation="Vertical" Margin="50,0">
+                <Image Source="/image/inventory.png" Width="100" Height="100" />
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="LightGray" Margin="0, 10">
+                    <Button Content="재고 관리" Command="{Binding OpenInventoryViewCommand}" Height="30" Width="150" Margin="0, 4">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#3E3E3E" />
+                                <Setter Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="ButtonBorder"
+        Background="{TemplateBinding Background}"
+        BorderBrush="{TemplateBinding BorderBrush}"
+        CornerRadius="15">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Content="{TemplateBinding Content}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <!-- Hover 상태에서 배경 변경 -->
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                                <!-- 클릭 상태에서 배경 변경 -->
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Border>
+            </StackPanel>
+
+            <!-- 판매 실적 버튼 -->
+            <StackPanel Orientation="Vertical" Margin="20,0">
+                <Image Source="/image/sales.png" Width="100" Height="100" />
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="LightGray" Margin="0, 10">
+                    <Button Content="판매 실적" Command="{Binding OpenSalesViewCommand}" Height="30" Width="150" Margin="0, 4">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#3E3E3E" />
+                                <Setter Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="ButtonBorder"
+Background="{TemplateBinding Background}"
+BorderBrush="{TemplateBinding BorderBrush}"
+CornerRadius="15">
+                                                <ContentPresenter HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Content="{TemplateBinding Content}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <!-- Hover 상태에서 배경 변경 -->
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                                <!-- 클릭 상태에서 배경 변경 -->
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Border>
+            </StackPanel>
         </StackPanel>
 
-        <!-- 버튼 섹션 -->
-        <Border BorderBrush="Black" BorderThickness="2" Width="300" Height="200" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
-                <!-- 상품 등록 버튼 -->
-                <Button Content="상품 등록" FontSize="16" Margin="0,10,0,10" Padding="10" Width="200" HorizontalAlignment="Center" Command="{Binding OpenInStockViewCommand}"/>
-
-                <!-- 재고 관리 버튼 -->
-                <Button Content="재고 관리" FontSize="16" Margin="0,10,0,10" Padding="10" Width="200" HorizontalAlignment="Center" Command="{Binding OpenInventoryViewCommand}"/>
-
-                <!-- 판매 실적 버튼 -->
-                <Button Content="판매 실적" FontSize="16" Margin="0,10,0,10" Padding="10" Width="200" HorizontalAlignment="Center" Command="{Binding OpenSalesViewCommand}"/>
-            </StackPanel>
-        </Border>
-        <TextBlock Text="{Binding ConnectionStatus}" HorizontalAlignment="Left" Margin="77,536,0,0" TextWrapping="Wrap" VerticalAlignment="Top" RenderTransformOrigin="-0.117,0.504" FontSize="13"/>
+        <TextBlock Text="{Binding ConnectionStatus}" Margin="0,536,10,0" TextWrapping="Wrap" 
+                                VerticalAlignment="Top" HorizontalAlignment="Right" 
+                                FontSize="12" Foreground="DarkGray"/>
     </Grid>
 </Window>

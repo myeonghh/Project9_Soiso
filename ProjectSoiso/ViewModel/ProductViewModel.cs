@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using ProjectSoiso.Helper;
+using LiveCharts.Wpf.Charts.Base;
 
 namespace ProjectSoiso.ViewModel
 {
@@ -81,8 +82,10 @@ namespace ProjectSoiso.ViewModel
             CurrentProduct = new Product();    // Product 모델 초기화
 
             SelectImageCommand = new RelayCommand(ExecuteSelectImage); // 이미지 선택 명령 초기화
-            RegisterCommand = new RelayCommand(ExecuteRegisterProduct, CanExecuteRegisterProduct); // 상품 등록 명령 초기화
+            //RegisterCommand = new RelayCommand(ExecuteRegisterProduct, CanExecuteRegisterProduct); // 상품 등록 명령 초기화
+            RegisterCommand = new RelayCommand(ExecuteRegisterProduct); // 항상 버튼 활성화
             GoBackCommand = new RelayCommand(ExecuteGoBack); // 뒤로가기 명령 초기화
+            ClearInputs();
         }
 
         private void ExecuteGoBack(object parameter)
@@ -156,6 +159,17 @@ namespace ProjectSoiso.ViewModel
         private void ExecuteRegisterProduct(object parameter)
         // 상품 등록 명령 구현
         {
+            // 입력값 확인
+            if (string.IsNullOrEmpty(CurrentProduct.Name) ||
+                string.IsNullOrEmpty(CurrentProduct.Category) ||
+                CurrentProduct.Price <= 0 ||
+                string.IsNullOrEmpty(CurrentProduct.ImgPath))
+            {
+                // 입력값이 누락된 경우 메시지 설정
+                Message = "모든 입력값을 올바르게 입력하세요.";
+                return;
+            }
+
             // 상품명이 중복인지 확인
             if (IsProductNameDuplicate(CurrentProduct.Name))
             {
@@ -171,7 +185,7 @@ namespace ProjectSoiso.ViewModel
                 return;
             }
 
-            CurrentProduct.QrPath = qrPath;     // QR 코드 경로 저장
+            CurrentProduct.QrPath = qrPath; // QR 코드 경로 저장
 
             // 데이터베이스에 상품 정보 삽입
             bool dbResult = InsertProductIntoDatabase(CurrentProduct);
@@ -282,7 +296,7 @@ namespace ProjectSoiso.ViewModel
                 Message = $"DB 저장 실패: {ex.Message}";
                 return false;
             }
-        }      
+        }
 
         private bool CanExecuteRegisterProduct(object parameter)
         // 상품 등록 버튼 활성화 조건(모든 필수 입력값이 채워졌는지 확인 & 이미지가 등록되었는지 확인)
@@ -297,11 +311,11 @@ namespace ProjectSoiso.ViewModel
         {
             CurrentProduct = new Product(); // 모델 초기화
             Message = string.Empty;         // 메시지 초기화        
-            PreviewImageSource = null;  // 이미지 미리보기 초기화
+            PreviewImageSource = new BitmapImage(new Uri("/image/default.jpg", UriKind.Relative));  // 이미지 미리보기 초기화
         }
-      
+
         // INotifyPropertyChanged 구현
         public event PropertyChangedEventHandler PropertyChanged;
-     
+
     }
 }

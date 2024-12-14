@@ -130,7 +130,7 @@ namespace SelfPosDesk.View
                 if (DataContext is SelfPosVM vm)
                 {
                     vm.SelectedPaymentMethod = paymentMethod;
-
+                    vm.IsQRCodeProcessingEnabled = true;
                     // CurrentView 변경 
                     vm.ChangePage(new CartView
                     {

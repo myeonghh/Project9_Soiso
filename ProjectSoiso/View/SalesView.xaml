@@ -13,9 +13,11 @@
         <!-- ComboBox 동적 데이터 바인딩 -->
         <ComboBox Name="MonthSelector" ItemsSource="{Binding Months}" SelectionChanged="MonthSelector_SelectionChanged"
           Width="200" Height="30" Margin="10,10,10,0" VerticalAlignment="Top"
-          HorizontalAlignment="Left" />
+          HorizontalAlignment="Right" />
 
-        <Button Content="뒤로가기" Command="{Binding GoBackCommand}" HorizontalAlignment="Left" Margin="818,10,0,0" VerticalAlignment="Top" Height="30" Width="74"/>
+        <Button Command="{Binding GoBackCommand}" Height="30" Width="30" HorizontalAlignment="Left" VerticalAlignment="Top" Background="Transparent" BorderBrush="Transparent" Margin="10,10,0,10" >
+            <Image Source="/image/back_button.png"/>
+        </Button>
 
         <TabControl Margin="10,50,10,10">
             <TabItem Header="월별 매출">

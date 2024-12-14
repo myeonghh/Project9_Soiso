@@ -27,6 +27,7 @@ namespace SelfPosDesk.ViewModel
         private string _selectedPaymentMethod;
         private string _backIntro;
         private string _backPayWay;
+        private bool _isQRCodeProcessingEnabled = false;
 
         private SerialPort _serialPort; // 아두이노 시리얼 포트
         private TcpClientHelper clientManager; // tcp통신 클래스 객체 선언
@@ -126,6 +127,17 @@ namespace SelfPosDesk.ViewModel
             set
             {
                 _backPayWay = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // QR코드 인식 작업을 제어하는 프로퍼티
+        public bool IsQRCodeProcessingEnabled
+        {
+            get => _isQRCodeProcessingEnabled;
+            set
+            {
+                _isQRCodeProcessingEnabled = value;
                 OnPropertyChanged();
             }
         }
@@ -296,6 +308,9 @@ namespace SelfPosDesk.ViewModel
             {
                 DataContext = this // 현재 ViewModel을 DataContext로 설정
             };
+
+            // QR 코드 처리 활성화
+            IsQRCodeProcessingEnabled = true;
         }
 
         private void ChangeToPayWayView(object parameter)
@@ -304,11 +319,17 @@ namespace SelfPosDesk.ViewModel
             {
                 DataContext = this // 현재 ViewModel을 DataContext로 설정
             };
+
+            // QR 코드 처리 비활성화
+            IsQRCodeProcessingEnabled = false;
         }
 
         public void ChangeToIntroView(object parameter)
         {
             CurrentView = new IntroView();
+
+            // QR 코드 처리 비활성화
+            IsQRCodeProcessingEnabled = false;
         }
 
         public void ChangePage(object newPage)
@@ -323,6 +344,9 @@ namespace SelfPosDesk.ViewModel
             OnPropertyChanged();
             AlltotalAmount = 0;
             TotalCount = 0;
+
+            // QR 코드 처리 비활성화
+            IsQRCodeProcessingEnabled = false;
         }
         public void GoToIntroView()
         {
@@ -331,6 +355,9 @@ namespace SelfPosDesk.ViewModel
             OnPropertyChanged();
             AlltotalAmount = 0;
             TotalCount = 0;
+
+            // QR 코드 처리 비활성화
+            IsQRCodeProcessingEnabled = false;
         }
 
         private void CheckWebcamDevices()
@@ -385,12 +412,8 @@ namespace SelfPosDesk.ViewModel
 
                     CurrentView = new ReceiptView();
 
-                    //// 장바구니 초기화
-                    //Products = new ObservableCollection<Product>();
-                    //OnPropertyChanged(nameof(Products)); // PropertyChanged 이벤트 발생
-                    //UpdateTotalAmount(); // 총 금액 초기화
-                    //UpdateTotalcount();  // 총 수량 초기화
-                    //UpdateTotalAllAmount(); // 총 금액 초기화
+                    // QR 코드 처리 비활성화
+                    IsQRCodeProcessingEnabled = false;
                 }
                 catch (Exception ex)
                 {
@@ -407,6 +430,12 @@ namespace SelfPosDesk.ViewModel
 
         private async void OnQRCodeScanned(object sender, string qrCodeData)
         {
+            // QR 코드 처리 활성화 상태 확인
+            if (!IsQRCodeProcessingEnabled)
+            {
+                return; // QR 코드 처리 비활성화 상태라면 무시
+            }
+
             // QR 코드 처리 지연 시간 확인
             if (DateTime.Now - _lastProcessedTime < _processingDelay)
             {

@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Image\back_button.png" />
+    <None Remove="Image\default.jpg" />
+    <None Remove="Image\instock.png" />
+    <None Remove="Image\inventory.png" />
+    <None Remove="Image\sales.png" />
     <None Remove="View\logo.png" />
   </ItemGroup>
 
@@ -20,6 +25,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Image\back_button.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Image\default.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Image\instock.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Image\inventory.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Image\sales.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="View\logo.png" />
   </ItemGroup>
 

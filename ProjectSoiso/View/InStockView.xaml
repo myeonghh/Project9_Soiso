@@ -10,58 +10,146 @@
     <Window.DataContext>
         <vm:ProductViewModel />
     </Window.DataContext>
+    <Window.Resources>
+        <Style TargetType="TextBox" x:Key="CustomTextBoxStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderBrush" Value="#DADADA"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <!-- Focus 상태일 때 배경색 변경 -->
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="Background" Value="LightGray"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            
-            
-            <RowDefinition Height="Auto" MinHeight="130.04" />
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Background="#F1F3F4">
+            <!-- 이미지 등록 및 미리보기 영역 -->
+            <Button Command="{Binding GoBackCommand}" Height="30" Width="30" HorizontalAlignment="Left" Background="Transparent" BorderBrush="Transparent" Margin="20,20,0,0" >
+                <Image Source="/image/back_button.png"/>
+            </Button>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0, 10">
+                <!-- 이미지 미리보기 -->
+                <Border BorderBrush="LightGray" BorderThickness="1" Width="160" Height="160">
+                    <!-- 배경 이미지 -->
+                    <Image Source="{Binding PreviewImageSource}" Stretch="Fill" Margin="5"/>
+                </Border>
+                <!-- 이미지 등록 버튼 -->
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="LightGray" Margin="0, 10">
+                    <Button Content="상품 이미지 등록" Command="{Binding SelectImageCommand}" Height="30" Width="150" Margin="0, 4">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#939499" />
+                                <Setter Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="ButtonBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    CornerRadius="15">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Content="{TemplateBinding Content}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <!-- Hover 상태에서 배경 변경 -->
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                                <!-- 클릭 상태에서 배경 변경 -->
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Foreground" Value="Black" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Border>
+            </StackPanel>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="229*" />
-            <ColumnDefinition Width="211*" />
-        </Grid.ColumnDefinitions>
-
-        <!-- 상품 정보 입력 영역 -->
-        <StackPanel Grid.Column="0" VerticalAlignment="Top" Margin="99,145,18,0" Height="184">
-            <!-- 상품명 -->
-            <StackPanel Orientation="Horizontal" Margin="0,10">
-                <Label Content="상품명" Width="80" VerticalAlignment="Center" />
-                <TextBox Text="{Binding CurrentProduct.Name, UpdateSourceTrigger=PropertyChanged}" Width="250" />
-            </StackPanel>
-            <!-- 카테고리 -->
-            <StackPanel Orientation="Horizontal" Margin="0,10">
-                <Label Content="카테고리" Width="80" VerticalAlignment="Center" />
-                <TextBox Text="{Binding CurrentProduct.Category, UpdateSourceTrigger=PropertyChanged}" Width="250" />
-            </StackPanel>
-            <!-- 가격 -->
-            <StackPanel Orientation="Horizontal" Margin="0,10">
-                <Label Content="가격" Width="80" VerticalAlignment="Center" />
-                <TextBox Text="{Binding CurrentProduct.Price, UpdateSourceTrigger=PropertyChanged}" Width="250" 
-                         PreviewTextInput="NumericOnly" />
-            </StackPanel>
-            <!-- 결과 메시지 -->
-            <StackPanel Orientation="Horizontal" Margin="0,10" Width="256" HorizontalAlignment="Right">
-                <TextBlock Text="{Binding Message}" Foreground="Red" Grid.Row="5" Margin="0,10,0,0" />
+            <!-- 상품 정보 입력 영역 -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
+                <!-- 상품명 -->
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="White" Margin="0,3">
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <Label Content="상품명" Width="60" HorizontalAlignment="Center" Foreground="gray" />
+                        <TextBox Text="{Binding CurrentProduct.Name, UpdateSourceTrigger=PropertyChanged}" Width="250" 
+                                            VerticalAlignment="Center" HorizontalAlignment="Left"  BorderBrush="Transparent"
+                                            Style="{StaticResource CustomTextBoxStyle}" />
+                    </StackPanel>
+                </Border>
+                <!-- 카테고리 -->
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="White" Margin="0,3">
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <Label Content="카테고리" Width="60" HorizontalAlignment="Center" Foreground="gray"  />
+                        <TextBox Text="{Binding CurrentProduct.Category, UpdateSourceTrigger=PropertyChanged}" Width="250" 
+                                            VerticalAlignment="Center" HorizontalAlignment="Left"  BorderBrush="Transparent"
+                                            Style="{StaticResource CustomTextBoxStyle}" />
+                    </StackPanel>
+                </Border>
+                <!-- 가격 -->
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="White" Margin="0,3">
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <Label Content="가격" Width="60" HorizontalAlignment="Center" Foreground="gray"  />
+                        <TextBox Text="{Binding CurrentProduct.Price, UpdateSourceTrigger=PropertyChanged}" Width="250"
+                                            VerticalAlignment="Center" HorizontalAlignment="Left"  BorderBrush="Transparent"
+                                            Style="{StaticResource CustomTextBoxStyle}" PreviewTextInput="NumericOnly" />
+                    </StackPanel>
+                </Border>
+                <!-- 결과 메시지 -->
+                <Grid HorizontalAlignment="Center" Margin="0,10" Width="256">
+                    <TextBlock Text="{Binding Message}" 
+               Foreground="#EC4653" 
+               Margin="0,10" 
+               HorizontalAlignment="Center" 
+               TextAlignment="Center" />
+                </Grid>
+                <!-- 하단 버튼 영역 -->
+                <Border HorizontalAlignment="Center" CornerRadius="17" Background="#EC4653" Margin="0,3">
+                    <Button Content="상품 등록" Command="{Binding RegisterCommand}" Height="30" Width="150" Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="ButtonBorder"
+          Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          CornerRadius="15">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="{TemplateBinding Content}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <!-- Hover 상태에서 배경 변경 -->
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ButtonBorder" Property="Background" Value="#C63B45" />
+                                                </Trigger>
+                                                <!-- 클릭 상태에서 배경 변경 -->
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="ButtonBorder" Property="Background" Value="#A32D37" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Border>
             </StackPanel>
         </StackPanel>
-
-        <!-- 이미지 등록 및 미리보기 영역 -->
-        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="360" Width="300">
-            <!-- 이미지 등록 버튼 -->
-            <Button Content="이미지 등록" Command="{Binding SelectImageCommand}" Height="30" Width="150" Margin="0,10" HorizontalAlignment="Center" />
-            <!-- 이미지 미리보기 -->
-            <Border BorderBrush="Gray" BorderThickness="1" Width="300" Height="300" Margin="0,10" HorizontalAlignment="Center">
-                <Image Source="{Binding PreviewImageSource}" Stretch="Uniform" />
-            </Border>
-        </StackPanel>
-
-        <!-- 하단 버튼 영역 -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" HorizontalAlignment="Left" Margin="360,10,0,10" Width="160">
-            <Button Content="상품 등록" Command="{Binding RegisterCommand}" Height="30" Width="150" Margin="5" />
-            <Button Content="뒤로가기" Command="{Binding GoBackCommand}" Height="30" Width="150" Margin="5" />
-        </StackPanel>
-    </Grid>
+    </ScrollViewer>
 </Window>
