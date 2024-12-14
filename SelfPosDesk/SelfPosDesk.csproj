@@ -10,10 +10,29 @@
 
   <ItemGroup>
     <None Remove="image\back.png" />
+    <None Remove="image\barcode.png" />
+    <None Remove="image\BTN_1Q.png" />
+    <None Remove="image\BTN_ALI.png" />
+    <None Remove="image\BTN_BC.png" />
+    <None Remove="image\BTN_CARD.png" />
+    <None Remove="image\BTN_KAKAO.png" />
+    <None Remove="image\BTN_NAVER.png" />
+    <None Remove="image\BTN_PAY.png" />
+    <None Remove="image\BTN_PAYCO.png" />
+    <None Remove="image\BTN_POINT.png" />
+    <None Remove="image\BTN_SOL.png" />
+    <None Remove="image\BTN_TMONEY.png" />
+    <None Remove="image\BTN_UNION.png" />
+    <None Remove="image\BTN_VOUCHER.png" />
+    <None Remove="image\BTN_ZERO.png" />
+    <None Remove="image\home.png" />
     <None Remove="image\laser.gif" />
     <None Remove="image\laser.png" />
     <None Remove="image\laser_green.gif" />
+    <None Remove="image\logo.png" />
     <None Remove="image\logo_mini.png" />
+    <None Remove="image\soiso_30.png" />
+    <None Remove="image\soiso_40.png" />
     <None Remove="View\logo.png" />
   </ItemGroup>
 
@@ -38,6 +57,54 @@
     <Resource Include="image\back.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="image\barcode.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_1Q.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_ALI.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_BC.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_CARD.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_KAKAO.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_NAVER.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_PAY.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_PAYCO.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_POINT.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_SOL.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_TMONEY.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_UNION.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_VOUCHER.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\BTN_ZERO.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\home.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="image\laser.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -47,7 +114,16 @@
     <Resource Include="image\laser_green.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="image\logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="image\logo_mini.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\soiso_30.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="image\soiso_40.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="View\logo.png" />

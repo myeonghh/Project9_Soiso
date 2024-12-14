@@ -24,6 +24,10 @@ namespace SelfPosDesk.ViewModel
         private decimal _totalAmount;
         private decimal _totalCount;
         private decimal _alltotalAmount;
+        private string _selectedPaymentMethod;
+        private string _backIntro;
+        private string _backPayWay;
+
         private SerialPort _serialPort; // 아두이노 시리얼 포트
         private TcpClientHelper clientManager; // tcp통신 클래스 객체 선언
         private bool connectSuccess;
@@ -87,6 +91,45 @@ namespace SelfPosDesk.ViewModel
             }
         }
 
+        public string SelectedPaymentMethod
+        {
+            get => _selectedPaymentMethod;
+            set
+            {
+                _selectedPaymentMethod = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public DateTime LastProcessedTime
+        {
+            get => _lastProcessedTime;
+            set
+            {
+                _lastProcessedTime = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string BackIntro
+        {
+            get => _backIntro;
+            set
+            {
+                _backIntro = value;
+                OnPropertyChanged();
+            }
+        }
+        public string BackPayWay
+        {
+            get => _backPayWay;
+            set
+            {
+                _backPayWay = value;
+                OnPropertyChanged();
+            }
+        }
+
         // 상품 리스트
         public ObservableCollection<Product> Products { get; set; }
 
@@ -95,6 +138,9 @@ namespace SelfPosDesk.ViewModel
         public ICommand StartCameraCommand { get; }
         public ICommand StopCameraCommand { get; }
         public ICommand PaymentCommand { get; }
+        public ICommand BackIntroCommand { get; }
+        public ICommand BackPayWayCommand { get; }
+        public ICommand GoIntroCommand { get; }
 
 
         private QRCodeProcessor _qrProcessor;
@@ -116,10 +162,13 @@ namespace SelfPosDesk.ViewModel
             InitializeSerialPort(); // 아두이노 시리얼 포트 초기화
 
             // 명령어 초기화
-            StartCommand = new RelayCommand(ChangeToCartView);
+            StartCommand = new RelayCommand(ChangeToPayWayView);
             StartCameraCommand = new RelayCommand(_ => StartCamera());
             StopCameraCommand = new RelayCommand(_ => StopCamera());
             PaymentCommand = new RelayCommand(_ => SendToServer());
+            BackIntroCommand = new RelayCommand(ChangeToIntroView);
+            BackPayWayCommand = new RelayCommand(_ => BackToPayWayView());
+            GoIntroCommand = new RelayCommand(_ => GoToIntroView());
 
             // 카메라 자동 시작
             StartCamera();
@@ -243,8 +292,47 @@ namespace SelfPosDesk.ViewModel
         private void ChangeToCartView(object parameter)
         {
             // CartView 화면으로 변경
-            CurrentView = new CartView();
+            CurrentView = new CartView
+            {
+                DataContext = this // 현재 ViewModel을 DataContext로 설정
+            };
         }
+
+        private void ChangeToPayWayView(object parameter)
+        {
+            CurrentView = new PayWay
+            {
+                DataContext = this // 현재 ViewModel을 DataContext로 설정
+            };
+        }
+
+        public void ChangeToIntroView(object parameter)
+        {
+            CurrentView = new IntroView();
+        }
+
+        public void ChangePage(object newPage)
+        {
+            CurrentView = newPage;
+        }
+
+        public void BackToPayWayView()
+        {
+            CurrentView = new PayWay();
+            Products = new ObservableCollection<Product>();
+            OnPropertyChanged();
+            AlltotalAmount = 0;
+            TotalCount = 0;
+        }
+        public void GoToIntroView()
+        {
+            CurrentView = new IntroView();
+            Products = new ObservableCollection<Product>();
+            OnPropertyChanged();
+            AlltotalAmount = 0;
+            TotalCount = 0;
+        }
+
         private void CheckWebcamDevices()
         {
 
@@ -275,13 +363,14 @@ namespace SelfPosDesk.ViewModel
         }
 
         private async void SendToServer()
-        {
+        {            
+
             if (Products == null || Products.Count == 0)
             {
                 ShowCustomDialog("장바구니에 상품이 없습니다.");
                 return;
             }
-
+          
             // 상품 정보를 직렬화
             string serializedProducts = string.Join("|", Products.Select(p => $"{p.ProductName},{p.Price},{p.Quantity}"));
 
@@ -294,12 +383,14 @@ namespace SelfPosDesk.ViewModel
                     await clientManager.SendData((int)ACT.BuyItem, AlltotalAmount.ToString(), serializedProducts);
                     ShowCustomDialog("결제가 완료되었습니다.");
 
-                    // 장바구니 초기화
-                    Products = new ObservableCollection<Product>();
-                    OnPropertyChanged(nameof(Products)); // PropertyChanged 이벤트 발생
-                    UpdateTotalAmount(); // 총 금액 초기화
-                    UpdateTotalcount();  // 총 수량 초기화
-                    UpdateTotalAllAmount(); // 총 금액 초기화
+                    CurrentView = new ReceiptView();
+
+                    //// 장바구니 초기화
+                    //Products = new ObservableCollection<Product>();
+                    //OnPropertyChanged(nameof(Products)); // PropertyChanged 이벤트 발생
+                    //UpdateTotalAmount(); // 총 금액 초기화
+                    //UpdateTotalcount();  // 총 수량 초기화
+                    //UpdateTotalAllAmount(); // 총 금액 초기화
                 }
                 catch (Exception ex)
                 {
@@ -310,6 +401,8 @@ namespace SelfPosDesk.ViewModel
             {
                 ShowCustomDialog("서버와 연결되어 있지 않습니다.");
             }
+
+            
         }
 
         private async void OnQRCodeScanned(object sender, string qrCodeData)
@@ -348,6 +441,7 @@ namespace SelfPosDesk.ViewModel
         {
             AlltotalAmount = Products.Sum(p => p.TotalPrice);
         }
+
         private void OnPreviewFrameAvailable(object sender, BitmapImage frame)
         {
             Debug.WriteLine("OnPreviewFrameAvailable 호출됨");

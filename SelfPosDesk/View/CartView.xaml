@@ -5,7 +5,7 @@
              xmlns:gif="http://wpfanimatedgif.codeplex.com"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="920">
+             d:DesignHeight="600" d:DesignWidth="1000">
     <Grid Background="LightGray">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -23,7 +23,7 @@
 
             <!-- Back 버튼 및 안내문 -->
             <StackPanel Grid.Row="0" Margin="0">
-                <Button x:Name="backBTN" BorderBrush="Transparent" Background="Transparent" 
+                <Button Command="{Binding BackPayWayCommand}" x:Name="backBTN" BorderBrush="Transparent" Background="Transparent" 
                         Margin="20,20,0,10" Width="40" Height="40" VerticalAlignment="Top" HorizontalAlignment="Left">
                     <Image Source="/image/back.png" Width="40" Height="40" Stretch="Fill"/>
                 </Button>
@@ -69,10 +69,10 @@
             <ListView Grid.Row="1" ItemsSource="{Binding Products}" Margin="10">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="상품명" DisplayMemberBinding="{Binding ProductName}" Width="150"/>
-                        <GridViewColumn Header="가격" DisplayMemberBinding="{Binding Price}" Width="80"/>
-                        <GridViewColumn Header="수량" DisplayMemberBinding="{Binding Quantity}" Width="60"/>
-                        <GridViewColumn Header="금액" DisplayMemberBinding="{Binding TotalPrice}" Width="80"/>
+                        <GridViewColumn Header="상품명" DisplayMemberBinding="{Binding ProductName}" Width="120"/>
+                        <GridViewColumn Header="가격" DisplayMemberBinding="{Binding Price}" Width="120"/>
+                        <GridViewColumn Header="수량" DisplayMemberBinding="{Binding Quantity}" Width="120"/>
+                        <GridViewColumn Header="금액" DisplayMemberBinding="{Binding TotalPrice}" Width="120"/>
                     </GridView>
                 </ListView.View>
             </ListView>
@@ -105,8 +105,7 @@
             </StackPanel>
 
             <!-- 결제 버튼 -->
-            <Button Grid.Row="3" Width="150" Height="50" Content="결제하기" FontSize="14" Foreground="White" Cursor="Hand" Margin="0,15"
-                    Command="{Binding PaymentCommand}">
+            <Button Command ="{Binding PaymentCommand}" Grid.Row="3" Width="150" Height="50" Content="결제하기" FontSize="14" Foreground="White" Cursor="Hand" Margin="0,15" >
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Grid>
