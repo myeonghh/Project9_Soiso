@@ -1,4 +1,5 @@
-﻿namespace SoisoManagerSever
+﻿
+namespace SoisoManagerSever
 {
     internal class Program
     {

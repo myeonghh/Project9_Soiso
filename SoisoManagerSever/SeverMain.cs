@@ -190,8 +190,6 @@ namespace SoisoManagerSever
 
         }
 
-
-
         private async Task DatabaseUpdate(TcpClient clientSocket, string itemInfo, string receiveMsg)
         {
             int totalPrice = int.Parse(itemInfo);
